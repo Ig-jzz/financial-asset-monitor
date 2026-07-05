@@ -1,0 +1,96 @@
+{
+  "name": "Financial Asset Monitor - Pipeline Diário",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Agendamento (Seg-Sex 08h)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "command": "cd /caminho/do/projeto && python pipeline.py >> logs/pipeline.log 2>&1"
+      },
+      "id": "run-pipeline",
+      "name": "Executar Pipeline Python",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.exitCode }}",
+              "value2": "0"
+            }
+          ]
+        }
+      },
+      "id": "check-success",
+      "name": "Pipeline OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "monitor@seudominio.com",
+        "toEmail": "voce@email.com",
+        "subject": "✅ Pipeline Financeiro executado com sucesso",
+        "text": "O pipeline rodou sem erros em {{ $now.format('DD/MM/YYYY HH:mm') }}.\n\nCSVs atualizados em /exports/."
+      },
+      "id": "email-success",
+      "name": "Email - Sucesso",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "fromEmail": "monitor@seudominio.com",
+        "toEmail": "voce@email.com",
+        "subject": "❌ Pipeline Financeiro falhou",
+        "text": "O pipeline encontrou um erro em {{ $now.format('DD/MM/YYYY HH:mm') }}.\n\nVerifique o arquivo logs/pipeline.log para detalhes."
+      },
+      "id": "email-error",
+      "name": "Email - Erro",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [900, 400]
+    }
+  ],
+  "connections": {
+    "Agendamento (Seg-Sex 08h)": {
+      "main": [
+        [{ "node": "Executar Pipeline Python", "type": "main", "index": 0 }]
+      ]
+    },
+    "Executar Pipeline Python": {
+      "main": [
+        [{ "node": "Pipeline OK?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Pipeline OK?": {
+      "main": [
+        [{ "node": "Email - Sucesso", "type": "main", "index": 0 }],
+        [{ "node": "Email - Erro", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "_meta": {
+    "instanceId": "financial-monitor"
+  }
+}
