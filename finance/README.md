@@ -1,6 +1,6 @@
 # Financial Asset Monitor
 
-Projeto pessoal que desenvolvi pra praticar construção de pipelines de dados. A ideia surgiu da vontade de acompanhar ações e cripto de forma automatizada, sem depender de apps prontos — e aproveitar pra aplicar Python, SQL e Power BI num contexto real.
+Projeto pessoal que desenvolvi pra praticar construção de pipelines de dados. 
 
 O pipeline coleta preços diariamente, calcula alguns indicadores e exporta tudo pro Power BI. Roda de segunda a sexta via n8n, sem precisar de intervenção manual.
 
